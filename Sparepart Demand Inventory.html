@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoulTown SPARE PART INVENTORY - Rekomendasi Order Sparepart</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        yamaha: {
+                            blue: '#003399',
+                            darkblue: '#002266',
+                            lightblue: '#0055ff',
+                            red: '#cc0000',
+                            dark: '#0f172a'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS CDN for Excel Processing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        @keyframes pulse-light {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .animate-pulse-slow {
+            animation: pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="h-full font-sans text-slate-800 antialiased bg-slate-100 flex flex-col min-h-screen">
+
+    <!-- LOGIN SCREEN MODAL -->
+    <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-8 transform transition-all">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yamaha-blue text-white mb-3 shadow-lg shadow-blue-500/30">
+                    <i class="fa-solid font-bold text-2xl">Y</i>
+                </div>
+                <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">SYS REKOM PART</h2>
+                <p class="text-xs font-semibold text-yamaha-blue tracking-widest uppercase mt-1">by SeoulTown @2026</p>
+            </div>
+
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fa-solid fa-user"></i>
+                        </span>
+                        <input type="text" id="loginUsername" required class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yamaha-blue focus:border-transparent text-sm" placeholder="Masukkan username">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fa-solid fa-lock"></i>
+                        </span>
+                        <input type="password" id="loginPassword" required class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yamaha-blue focus:border-transparent text-sm" placeholder="Masukkan password">
+                    </div>
+                </div>
+
+                <div id="loginError" class="hidden text-xs text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-200 font-medium text-center">
+                    Username atau password salah!
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-yamaha-blue hover:bg-yamaha-darkblue text-white font-bold rounded-lg shadow-md hover:shadow-lg transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span>Masuk System</span>
+                </button>
+            </form>
+
+            <div class="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500 space-y-1">
+                <p class="font-semibold text-slate-700">Akun Akses Default:</p>
+                <div class="flex justify-between items-center text-slate-600">
+                    <span>Bengkel: <code class="bg-slate-100 px-1 py-0.5 rounded border border-slate-200">yamaha</code> / <code class="bg-slate-100 px-1 py-0.5 rounded border border-slate-200">123456</code></span>
+                </div>                
+            </div>
+        </div>
+    </div>
+
+    <!-- APP HEADER -->
+    <header class="bg-yamaha-dark text-white shadow-xl border-b-4 border-yamaha-blue sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-yamaha-blue flex items-center justify-center shadow-inner font-extrabold text-white text-xl">
+                    Y
+                </div>
+                <div>
+                    <h1 class="text-lg md:text-xl font-black tracking-tight text-white flex items-center gap-2">
+                        SEOULTOWN SPARE PART INVENTORY
+                    </h1>
+                    <p class="text-xs text-blue-300 font-medium">Demand Analysis & Order Recommendation System</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between md:justify-end gap-3 border-t md:border-t-0 pt-2 md:pt-0 border-slate-700">
+                <div id="userInfoContainer" class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+                    <i class="fa-solid fa-circle-user text-blue-400"></i>
+                    <div class="text-xs">
+                        <span id="userNameDisplay" class="font-bold text-white block">Guest</span>
+                        <span id="userRoleBadge" class="text-[10px] text-blue-300 font-semibold uppercase">Bengkel</span>
+                    </div>
+                </div>
+
+                <button id="btnAdminMenu" onclick="openAdminModal()" class="hidden px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Admin ROQ</span>
+                </button>
+
+                <button onclick="handleLogout()" class="px-3 py-1.5 bg-red-600/80 hover:bg-red-600 text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-power-off"></i>
+                    <span>Keluar</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- UPLOAD SECTION -->
+        <section class="bg-white rounded-xl shadow-md border border-slate-200 p-5">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+                <div>
+                    <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel text-emerald-600"></i>
+                        Upload Source Data Excel
+                    </h2>
+                    <p class="text-xs text-slate-500">Unggah 4 file Excel penjualan 3 bulan dan stok detail terbaru.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="resetAllData()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition border border-slate-300 flex items-center gap-1">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Reset Data</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Upload Boxes Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- File 1: Sales M0 -->
+                <div id="dropzoneM0" class="border-2 border-dashed border-slate-300 hover:border-yamaha-blue rounded-xl p-4 text-center transition bg-slate-50 relative group">
+                    <input type="file" id="fileM0" accept=".xlsx, .xls" onchange="handleFileSelect('m0', this)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 text-yamaha-blue flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-calendar-day"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-700">1. Bulan Ini (M0)</span>
+                        <p class="text-[11px] text-slate-400">data dari Menu-Sparepart-Penjualan_Cek Laporan Penjualan (Sparepart) INGAT!! TANGGAL DI UBAH</p>
+                        <div id="statusM0" class="text-[11px] font-semibold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200 w-full truncate">
+                            Belum diunggah
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File 2: Sales M1 -->
+                <div id="dropzoneM1" class="border-2 border-dashed border-slate-300 hover:border-yamaha-blue rounded-xl p-4 text-center transition bg-slate-50 relative group">
+                    <input type="file" id="fileM1" accept=".xlsx, .xls" onchange="handleFileSelect('m1', this)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 text-yamaha-blue flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-calendar-minus"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-700">2. Bulan Kemarin (M1)</span>
+                        <p class="text-[11px] text-slate-400">data dari Menu-Sparepart-Penjualan_Cek Laporan Penjualan (Sparepart) INGAT!! TANGGAL DI UBAH</p>
+                        <div id="statusM1" class="text-[11px] font-semibold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200 w-full truncate">
+                            Belum diunggah
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File 3: Sales M2 -->
+                <div id="dropzoneM2" class="border-2 border-dashed border-slate-300 hover:border-yamaha-blue rounded-xl p-4 text-center transition bg-slate-50 relative group">
+                    <input type="file" id="fileM2" accept=".xlsx, .xls" onchange="handleFileSelect('m2', this)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                        <div class="w-10 h-10 rounded-full bg-blue-100 text-yamaha-blue flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-calendar-xmark"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-700">3. Bulan Kemarin Lusa (M2)</span>
+                        <p class="text-[11px] text-slate-400">data dari Menu-Sparepart-Penjualan_Cek Laporan Penjualan (Sparepart) INGAT!! TANGGAL DI UBAH</p>
+                        <div id="statusM2" class="text-[11px] font-semibold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200 w-full truncate">
+                            Belum diunggah
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File 4: Stock Detail -->
+                <div id="dropzoneStock" class="border-2 border-dashed border-slate-300 hover:border-yamaha-blue rounded-xl p-4 text-center transition bg-slate-50 relative group">
+                    <input type="file" id="fileStock" accept=".xlsx, .xls" onchange="handleFileSelect('stock', this)" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+                    <div class="flex flex-col items-center justify-center space-y-2">
+                        <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-boxes-stacked"></i>
+                        </div>
+                        <span class="text-xs font-bold text-slate-700">4. Stok Detail</span>
+                        <p class="text-[11px] text-slate-400">data dari Menu-Sparepart-Gudang Part-Cek Informasi Stok- Pilih SOCK DETAIL</p>
+                        <div id="statusStock" class="text-[11px] font-semibold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200 w-full truncate">
+                            Belum diunggah
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="mt-5 flex items-center justify-center">
+                <button id="btnProcessData" onclick="processAllFiles()" disabled class="w-full sm:w-auto px-8 py-3 bg-slate-300 text-slate-500 font-bold text-sm rounded-xl transition cursor-not-allowed flex items-center justify-center gap-2 shadow">
+                    <i class="fa-solid fa-gears"></i>
+                    <span>PROSES DATA REKOMENDASI</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- DASHBOARD SUMMARY SECTION -->
+        <section id="dashboardSection" class="hidden space-y-4">
+            <!-- Metadata Info Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs bg-slate-800 text-slate-300 px-4 py-2.5 rounded-lg shadow">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span class="font-medium">Status Pengolahan: <strong class="text-emerald-400">Selesai & Valid</strong></span>
+                </div>
+                <div class="flex items-center gap-4 mt-1 sm:mt-0 text-slate-400">
+                    <span><i class="fa-regular fa-clock mr-1"></i> Terakhir Diproses: <strong id="lastProcessTime" class="text-white">-</strong></span>
+                    <span><i class="fa-solid fa-list-check mr-1"></i> Total Item: <strong id="totalPartCount" class="text-white">0</strong></span>
+                </div>
+            </div>
+
+            <!-- Cards Summary Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <!-- Card 1 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Unique Part Code</span>
+                    <span id="statUniqueParts" class="text-2xl font-black text-slate-800 mt-1">0</span>
+                    <p class="text-[10px] text-slate-500 mt-auto pt-1">Total spare part terdaftar</p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Penjualan 3 Bulan</span>
+                    <span id="statTotalSales3M" class="text-2xl font-black text-blue-600 mt-1">0</span>
+                    <p class="text-[10px] text-slate-500 mt-auto pt-1">Total unit terjual (M0+M1+M2)</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Stok Saat Ini</span>
+                    <span id="statTotalStock" class="text-2xl font-black text-slate-700 mt-1">0</span>
+                    <p class="text-[10px] text-slate-500 mt-auto pt-1">Akumulasi stok fisik</p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-amber-200 bg-amber-50/30 flex flex-col">
+                    <span class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Part Perlu Order</span>
+                    <span id="statPartsToOrder" class="text-2xl font-black text-amber-600 mt-1">0</span>
+                    <p class="text-[10px] text-amber-700 mt-auto pt-1">Part dengan Rekomendasi > 0</p>
+                </div>
+
+                <!-- Card 5 -->
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-emerald-200 bg-emerald-50/30 flex flex-col col-span-2 sm:col-span-1">
+                    <span class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Qty Order Rekomendasi</span>
+                    <span id="statTotalQtyRec" class="text-2xl font-black text-emerald-600 mt-1">0</span>
+                    <p class="text-[10px] text-emerald-700 mt-auto pt-1">Total unit yang harus diorder</p>
+                </div>
+            </div>
+
+            <!-- ABC Category Breakdown Bar -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Breakdown ABC Category</h3>
+                    <span class="text-[11px] text-slate-400">Distribusi Prioritas Kategori Part</span>
+                </div>
+                <div id="abcBreakdownContainer" class="grid grid-cols-6 gap-2 text-center text-xs">
+                    <!-- Dynamic badges populated via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- MAIN RECOMMENDATION TABLE SECTION -->
+        <section id="tableSection" class="hidden bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+            <!-- Table Toolbar -->
+            <div class="p-4 bg-slate-50 border-b border-slate-200 space-y-3">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <!-- Quick Preset Filters -->
+                    <div class="flex items-center flex-wrap gap-1.5">
+                        <button onclick="setPresetFilter('ALL')" id="presetALL" class="preset-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-yamaha-blue text-white shadow">
+                            SEMUA
+                        </button>
+                        <button onclick="setPresetFilter('ORDER')" id="presetORDER" class="preset-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">
+                            <i class="fa-solid fa-cart-shopping text-amber-500 mr-1"></i>PERLU ORDER
+                        </button>
+                        <button onclick="setPresetFilter('STOCK0')" id="presetSTOCK0" class="preset-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">
+                            <i class="fa-solid fa-triangle-exclamation text-red-500 mr-1"></i>STOK 0
+                        </button>
+                        <button onclick="setPresetFilter('SAFE')" id="presetSAFE" class="preset-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100">
+                            <i class="fa-solid fa-shield-check text-emerald-500 mr-1"></i>STOK AMAN
+                        </button>
+                    </div>
+
+                    <!-- Export Actions -->
+                    <div class="flex items-center gap-2">
+                        <button onclick="exportToExcel()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Export Excel</span>
+                        </button>
+                        <button onclick="exportToCSV()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition flex items-center gap-1.5 shadow">
+                            <i class="fa-solid fa-file-csv"></i>
+                            <span>Export CSV</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Secondary Filter Bar -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 pt-2 border-t border-slate-200">
+                    <!-- Search Input -->
+                    <div class="relative md:col-span-2">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                            <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                        </span>
+                        <input type="text" id="searchInput" oninput="handleSearchFilterChange()" class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yamaha-blue" placeholder="Cari Kode Part atau Nama Part...">
+                    </div>
+
+                    <!-- Filter ABC -->
+                    <div>
+                        <select id="filterABC" onchange="handleSearchFilterChange()" class="w-full py-1.5 px-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-yamaha-blue">
+                            <option value="ALL">Semua ABC Category</option>
+                            <option value="A">ABC: A</option>
+                            <option value="B">ABC: B</option>
+                            <option value="C">ABC: C</option>
+                            <option value="D">ABC: D</option>
+                            <option value="S">ABC: S</option>
+                            <option value="N">ABC: N</option>
+                        </select>
+                    </div>
+
+                    <!-- Options Toggle -->
+                    <div class="flex items-center justify-between gap-2">
+                        <button onclick="toggleDetailColumns()" id="btnToggleDetails" class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold rounded-lg transition flex items-center gap-1 w-full justify-center">
+                            <i class="fa-solid fa-eye"></i>
+                            <span id="txtToggleDetails">Tampil Detail</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-800 text-white uppercase tracking-wider text-[11px] sticky top-0 z-10">
+                        <tr>
+                            <th class="py-3 px-3 border-b border-slate-700">Kode Part</th>
+                            <th class="py-3 px-3 border-b border-slate-700">Nama Part</th>
+                            <th class="py-3 px-2 border-b border-slate-700 text-center">ABC</th>
+                            
+                            <!-- Detail Columns (Collapsible) -->
+                            <th class="detail-col hidden py-3 px-2 border-b border-slate-700 text-right">M0 (Bln Ini)</th>
+                            <th class="detail-col hidden py-3 px-2 border-b border-slate-700 text-right">M1 (Kmrn)</th>
+                            <th class="detail-col hidden py-3 px-2 border-b border-slate-700 text-right">M2 (Lusa)</th>
+                            <th class="detail-col hidden py-3 px-2 border-b border-slate-700 text-right">Tot 3 Bln</th>
+                            
+                            <th class="py-3 px-2 border-b border-slate-700 text-right cursor-pointer hover:bg-slate-700" onclick="sortByField('avgDemand')">
+                                Avg Demand <i class="fa-solid fa-sort text-[10px] ml-0.5"></i>
+                            </th>
+                            <th class="py-3 px-2 border-b border-slate-700 text-right cursor-pointer hover:bg-slate-700" onclick="sortByField('stockQty')">
+                                Stok Saat Ini <i class="fa-solid fa-sort text-[10px] ml-0.5"></i>
+                            </th>
+                            <th class="py-3 px-2 border-b border-slate-700 text-center">ROQ</th>
+                            
+                            <th class="detail-col hidden py-3 px-2 border-b border-slate-700 text-right">Kekurangan</th>
+                            
+                            <th class="py-3 px-3 border-b border-slate-700 text-right cursor-pointer hover:bg-slate-700" onclick="sortByField('recOrder')">
+                                Rekomendasi Beli <i class="fa-solid fa-sort text-[10px] ml-0.5"></i>
+                            </th>
+                            <th class="py-3 px-3 border-b border-slate-700 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recommendationTableBody" class="divide-y divide-slate-200 font-medium">
+                        <!-- Table Rows Rendered Dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Footer & Pagination -->
+            <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+                <div class="flex items-center gap-2">
+                    <span>Tampilkan:</span>
+                    <select id="itemsPerPageSelect" onchange="changeItemsPerPage(this.value)" class="py-1 px-2 rounded border border-slate-300 text-xs bg-white">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span id="paginationInfo">Menampilkan 0 - 0 dari 0 data</span>
+                </div>
+
+                <div class="flex items-center gap-1" id="paginationControls">
+                    <!-- Pagination Buttons Rendered JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MODAL: CALCULATION AUDIT DETAIL -->
+    <div id="auditModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+            <!-- Modal Header -->
+            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-calculator text-yamaha-blue text-lg"></i>
+                    <h3 class="font-bold text-sm">Audit Math Calculation Detail</h3>
+                </div>
+                <button onclick="closeAuditModal()" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div id="auditModalContent" class="p-5 overflow-y-auto custom-scrollbar space-y-4 text-xs">
+                <!-- Content injected via JS -->
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-slate-50 p-3 border-t border-slate-200 flex justify-end">
+                <button onclick="closeAuditModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs rounded-lg">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADMIN MANAGEMENT -->
+    <div id="adminModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
+            <!-- Modal Header -->
+            <div class="bg-amber-600 text-white p-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-lg"></i>
+                    <h3 class="font-bold text-sm">Pengaturan Parameter ROQ & Sistem (Admin)</h3>
+                </div>
+                <button onclick="closeAdminModal()" class="text-amber-100 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-5 overflow-y-auto custom-scrollbar space-y-5 text-xs">
+                <!-- Section 1: Default ROQ Setting -->
+                <div class="bg-amber-50/60 border border-amber-200 p-4 rounded-xl space-y-2">
+                    <h4 class="font-bold text-amber-900 flex items-center gap-2">
+                        <i class="fa-solid fa-gear"></i> ROQ Default Parameter
+                    </h4>
+                    <p class="text-slate-600 text-[11px]">ROQ Default berlaku untuk semua kode part yang tidak memiliki spesifikasi ROQ khusus.</p>
+                    <div class="flex items-center gap-3 pt-2">
+                        <input type="number" id="inputDefaultROQ" min="1" value="10" class="w-32 px-3 py-1.5 border border-slate-300 rounded-lg text-sm font-bold focus:ring-2 focus:ring-amber-500">
+                        <button onclick="saveDefaultROQ()" class="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg shadow">
+                            Simpan Default ROQ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section 2: Custom ROQ per Part Code -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-slate-800">Spesifikasi ROQ Khusus Per Kode Part</h4>
+                        <div class="flex gap-2">
+                            <button onclick="exportROQConfig()" class="px-2.5 py-1 bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-semibold">
+                                <i class="fa-solid fa-download mr-1"></i>Export Config
+                            </button>
+                            <label class="px-2.5 py-1 bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-semibold cursor-pointer">
+                                <i class="fa-solid fa-upload mr-1"></i>Import Config
+                                <input type="file" id="importROQFile" accept=".json" onchange="importROQConfig(this)" class="hidden">
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Add New ROQ Form -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <input type="text" id="adminNewPartCode" placeholder="Kode Part (mis: 90793AJ90900)" class="px-3 py-1.5 border border-slate-300 rounded text-xs uppercase">
+                        <input type="number" id="adminNewROQ" min="1" placeholder="Nilai ROQ Khusus" class="px-3 py-1.5 border border-slate-300 rounded text-xs">
+                        <button onclick="addCustomROQ()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded text-xs">
+                            <i class="fa-solid fa-plus mr-1"></i>Tambah / Update
+                        </button>
+                    </div>
+
+                    <!-- List of Custom ROQs -->
+                    <div class="max-h-48 overflow-y-auto border border-slate-200 rounded-lg custom-scrollbar">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 font-bold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-2">Kode Part</th>
+                                    <th class="p-2">Nilai ROQ Khusus</th>
+                                    <th class="p-2 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customROQTableBody" class="divide-y divide-slate-200">
+                                <!-- Populated JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-slate-50 p-3 border-t border-slate-200 flex justify-end">
+                <button onclick="closeAdminModal()" class="px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs rounded-lg">
+                    Tutup Menu Admin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- JAVASCRIPT APP ENGINE -->
+    <script>
+        // APP STATE
+        const APP_STATE = {
+            currentUser: null, // { username, name, role }
+            files: {
+                m0: null,
+                m1: null,
+                m2: null,
+                stock: null
+            },
+            processedData: [],   // Master array of objects
+            filteredData: [],    // Filtered array for table
+            roqConfig: {
+                defaultROQ: 10,
+                customROQ: {} // { '90793AJ90900': 20 }
+            },
+            lastProcessTime: null,
+            currentPage: 1,
+            itemsPerPage: 25,
+            activePreset: 'ALL',
+            showDetails: false,
+            sortField: 'recOrder',
+            sortDirection: 'desc'
+        };
+
+        // USER CREDENTIALS
+        const USERS = {
+            yamaha: { password: '123456', name: 'Bengkel', role: 'bengkel' },
+            sulton: { password: 'sulton123', name: 'Admin', role: 'admin' }
+        };
+
+        // ON LOAD INITIALIZATION
+        window.onload = function() {
+            loadROQSettingsFromStorage();
+            checkExistingSession();
+        };
+
+        // LOCAL STORAGE LOAD / SAVE ROQ
+        function loadROQSettingsFromStorage() {
+            try {
+                const saved = localStorage.getItem('yamaha_roq_config');
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && typeof parsed.defaultROQ === 'number') {
+                        APP_STATE.roqConfig = parsed;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load ROQ settings from LocalStorage", e);
+            }
+        }
+
+        function saveROQSettingsToStorage() {
+            try {
+                localStorage.setItem('yamaha_roq_config', JSON.stringify(APP_STATE.roqConfig));
+            } catch (e) {
+                console.error("Failed to save ROQ settings to LocalStorage", e);
+            }
+        }
+
+        // LOGIN & LOGOUT
+        function checkExistingSession() {
+            const savedSession = sessionStorage.getItem('yamaha_user_session');
+            if (savedSession) {
+                try {
+                    const user = JSON.parse(savedSession);
+                    setUserSession(user);
+                    return;
+                } catch(e){}
+            }
+            showLoginModal(true);
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const u = document.getElementById('loginUsername').value.trim();
+            const p = document.getElementById('loginPassword').value.trim();
+            const errDiv = document.getElementById('loginError');
+
+            if (USERS[u] && USERS[u].password === p) {
+                const userObj = { username: u, name: USERS[u].name, role: USERS[u].role };
+                sessionStorage.setItem('yamaha_user_session', JSON.stringify(userObj));
+                setUserSession(userObj);
+                errDiv.classList.add('hidden');
+                showLoginModal(false);
+                showToast(`Selamat datang, ${userObj.name}!`, 'success');
+            } else {
+                errDiv.classList.remove('hidden');
+            }
+        }
+
+        function setUserSession(user) {
+            APP_STATE.currentUser = user;
+            document.getElementById('userNameDisplay').innerText = user.name;
+            document.getElementById('userRoleBadge').innerText = user.role.toUpperCase();
+
+            const adminBtn = document.getElementById('btnAdminMenu');
+            if (user.role === 'admin') {
+                adminBtn.classList.remove('hidden');
+            } else {
+                adminBtn.classList.add('hidden');
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('yamaha_user_session');
+            APP_STATE.currentUser = null;
+            showLoginModal(true);
+            showToast('Anda telah keluar dari aplikasi.', 'info');
+        }
+
+        function showLoginModal(show) {
+            const modal = document.getElementById('loginModal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        // PART CODE NORMALIZATION (CRITICAL REQUIREMENT)
+        function normalizePartCode(val) {
+            if (val === null || val === undefined) return "";
+            let str = String(val).trim();
+            // Remove non-printable, zero-width spaces (\u200B-\u200D, \uFEFF)
+            str = str.replace(/[\u200B-\u200D\uFEFF]/g, "");
+            // Remove internal spaces if needed, Yamaha codes keep formatting exact
+            str = str.replace(/\s+/g, "");
+            return str.toUpperCase();
+        }
+
+        // FILE UPLOAD HANDLERS
+        function handleFileSelect(type, input) {
+            const file = input.files[0];
+            const statusDiv = document.getElementById(`status${type.toUpperCase()}`);
+            
+            if (!file) {
+                APP_STATE.files[type] = null;
+                statusDiv.innerHTML = 'Belum diunggah';
+                statusDiv.className = "text-[11px] font-semibold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200 w-full truncate";
+                checkProcessButtonState();
+                return;
+            }
+
+            // Read preview info using SheetJS
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1, raw: true, defval: '' });
+
+                    const rowCount = Math.max(0, jsonData.length - 1);
+                    APP_STATE.files[type] = {
+                        file: file,
+                        workbook: workbook,
+                        rowCount: rowCount
+                    };
+
+                    statusDiv.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> ${file.name} (${rowCount} baris)`;
+                    statusDiv.className = "text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-300 w-full truncate";
+
+                    showToast(`Berhasil membaca ${file.name}`, 'success');
+                } catch (err) {
+                    console.error("Error reading excel:", err);
+                    APP_STATE.files[type] = null;
+                    statusDiv.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-red-500 mr-1"></i> Gagal Membaca File`;
+                    statusDiv.className = "text-[11px] font-semibold text-red-700 bg-red-50 px-2 py-1 rounded border border-red-300 w-full truncate";
+                    showToast(`File ${file.name} korup atau bukan Excel valid!`, 'error');
+                }
+                checkProcessButtonState();
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function checkProcessButtonState() {
+            const btn = document.getElementById('btnProcessData');
+            const allUploaded = APP_STATE.files.m0 && APP_STATE.files.m1 && APP_STATE.files.m2 && APP_STATE.files.stock;
+            
+            if (allUploaded) {
+                btn.disabled = false;
+                btn.className = "w-full sm:w-auto px-8 py-3 bg-yamaha-blue hover:bg-yamaha-darkblue text-white font-bold text-sm rounded-xl transition cursor-pointer shadow-lg hover:shadow-xl flex items-center justify-center gap-2 transform hover:-translate-y-0.5";
+            } else {
+                btn.disabled = true;
+                btn.className = "w-full sm:w-auto px-8 py-3 bg-slate-300 text-slate-500 font-bold text-sm rounded-xl transition cursor-not-allowed flex items-center justify-center gap-2 shadow";
+            }
+        }
+
+        // PARSE SALES EXCEL FILE
+        function parseSalesFile(fileObj, fileLabel) {
+            const sheet = fileObj.workbook.Sheets[fileObj.workbook.SheetNames[0]];
+            const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' });
+
+            if (!rawData || rawData.length === 0) {
+                throw new Error(`File ${fileLabel} kosong!`);
+            }
+
+            // Column Mapping Fallbacks
+            // Default Col D = 3 (Order Parts), Col E = 4 (Nama Part), Col H = 7 (ABC), Col L = 11 (Order Qty)
+            let colOrderParts = 3;
+            let colPartName = 4;
+            let colABC = 7;
+            let colOrderQty = 11;
+
+            // Header auto-detection scan in first 10 rows
+            let headerRowIndex = -1;
+            for (let r = 0; r < Math.min(10, rawData.length); r++) {
+                const row = rawData[r];
+                if (!Array.isArray(row)) continue;
+                for (let c = 0; c < row.length; c++) {
+                    const cellVal = String(row[c]).toLowerCase().trim();
+                    if (cellVal.includes('order parts') || cellVal.includes('part code') || cellVal.includes('kode part')) {
+                        colOrderParts = c;
+                        headerRowIndex = r;
+                    }
+                    if (cellVal.includes('nama part') || cellVal.includes('part name') || cellVal.includes('description')) {
+                        colPartName = c;
+                    }
+                    if (cellVal === 'abc' || cellVal.includes('kategori abc') || cellVal.includes('abc cat')) {
+                        colABC = c;
+                    }
+                    if (cellVal.includes('order qty') || cellVal.includes('sales qty') || cellVal.includes('qty')) {
+                        colOrderQty = c;
+                    }
+                }
+                if (headerRowIndex !== -1) break;
+            }
+
+            const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+            const salesMap = new Map(); // partCode -> { qty, name, abc }
+
+            for (let r = startRow; r < rawData.length; r++) {
+                const row = rawData[r];
+                if (!row || row.length === 0) continue;
+
+                const rawCode = row[colOrderParts];
+                const partCode = normalizePartCode(rawCode);
+
+                if (!partCode || partCode === 'ORDERPARTS' || partCode === 'KODEPART') continue;
+
+                const partName = row[colPartName] ? String(row[colPartName]).trim() : '';
+                const abc = row[colABC] ? String(row[colABC]).trim().toUpperCase() : '';
+                const qtyVal = parseFloat(row[colOrderQty]) || 0;
+
+                if (!salesMap.has(partCode)) {
+                    salesMap.set(partCode, { qty: 0, name: partName, abc: abc });
+                }
+
+                const existing = salesMap.get(partCode);
+                existing.qty += qtyVal;
+                if (!existing.name && partName) existing.name = partName;
+                if (!existing.abc && abc) existing.abc = abc;
+            }
+
+            return salesMap;
+        }
+
+        // PARSE STOCK DETAIL EXCEL FILE
+        function parseStockFile(fileObj) {
+            const sheet = fileObj.workbook.Sheets[fileObj.workbook.SheetNames[0]];
+            const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' });
+
+            if (!rawData || rawData.length === 0) {
+                throw new Error("File Stok Detail kosong!");
+            }
+
+            // Col A = 0 (Parts Code), Col C = 2 (Parts Name), Col D = 3 (Superseding), Col H = 7 (Stock Qty), Col N = 13 (ABC Category)
+            let colPartsCode = 0;
+            let colPartsName = 2;
+            let colStockQty = 7;
+            let colABC = 13;
+
+            let headerRowIndex = -1;
+            for (let r = 0; r < Math.min(10, rawData.length); r++) {
+                const row = rawData[r];
+                if (!Array.isArray(row)) continue;
+                for (let c = 0; c < row.length; c++) {
+                    const cellVal = String(row[c]).toLowerCase().trim();
+                    if (cellVal.includes('parts code') || cellVal.includes('part code') || cellVal.includes('kode part')) {
+                        colPartsCode = c;
+                        headerRowIndex = r;
+                    }
+                    if (cellVal.includes('parts name') || cellVal.includes('part name')) {
+                        colPartsName = c;
+                    }
+                    if (cellVal.includes('stock qty') || cellVal.includes('stok qty') || cellVal.includes('stock')) {
+                        colStockQty = c;
+                    }
+                    if (cellVal.includes('abc category') || cellVal.includes('abc')) {
+                        colABC = c;
+                    }
+                }
+                if (headerRowIndex !== -1) break;
+            }
+
+            const startRow = headerRowIndex !== -1 ? headerRowIndex + 1 : 0;
+            const stockMap = new Map(); // partCode -> { stockQty, name, abc }
+
+            for (let r = startRow; r < rawData.length; r++) {
+                const row = rawData[r];
+                if (!row || row.length === 0) continue;
+
+                const rawCode = row[colPartsCode];
+                const partCode = normalizePartCode(rawCode);
+
+                if (!partCode || partCode === 'PARTSCODE' || partCode === 'KODEPART') continue;
+
+                const partName = row[colPartsName] ? String(row[colPartsName]).trim() : '';
+                const stockVal = parseFloat(row[colStockQty]) || 0;
+                const abcCat = row[colABC] ? String(row[colABC]).trim().toUpperCase() : '';
+
+                if (!stockMap.has(partCode)) {
+                    stockMap.set(partCode, { stockQty: 0, name: partName, abc: abcCat });
+                }
+
+                const existing = stockMap.get(partCode);
+                existing.stockQty += stockVal; // Aggregate stock across multiple locations
+                if (!existing.name && partName) existing.name = partName;
+                if (!existing.abc && abcCat) existing.abc = abcCat;
+            }
+
+            return stockMap;
+        }
+
+        // MASTER PROCESS DATA
+        function processAllFiles() {
+            try {
+                showToast('Sedang memproses 4 file Excel...', 'info');
+
+                // 1. Parse Sales M0, M1, M2
+                const mapM0 = parseSalesFile(APP_STATE.files.m0, 'Bulan Ini');
+                const mapM1 = parseSalesFile(APP_STATE.files.m1, 'Bulan Kemarin');
+                const mapM2 = parseSalesFile(APP_STATE.files.m2, 'Bulan Kemarin Lusa');
+
+                // 2. Parse Stock Detail
+                const mapStock = parseStockFile(APP_STATE.files.stock);
+
+                // 3. Collect ALL unique Part Codes across Sales & Stock
+                const allPartCodes = new Set([
+                    ...mapM0.keys(),
+                    ...mapM1.keys(),
+                    ...mapM2.keys(),
+                    ...mapStock.keys()
+                ]);
+
+                const results = [];
+
+                // 4. Calculate for each part code
+                allPartCodes.forEach(partCode => {
+                    const dataM0 = mapM0.get(partCode) || { qty: 0, name: '', abc: '' };
+                    const dataM1 = mapM1.get(partCode) || { qty: 0, name: '', abc: '' };
+                    const dataM2 = mapM2.get(partCode) || { qty: 0, name: '', abc: '' };
+                    const dataStock = mapStock.get(partCode) || { stockQty: 0, name: '', abc: '' };
+
+                    const m0Qty = dataM0.qty;
+                    const m1Qty = dataM1.qty;
+                    const m2Qty = dataM2.qty;
+                    const totalSales3M = m0Qty + m1Qty + m2Qty;
+
+                    // Exact Average Demand (unrounded)
+                    const avgDemand = totalSales3M / 3;
+
+                    const stockQty = dataStock.stockQty;
+
+                    // Part Name Priority: Stock Name > M0 Name > M1 Name > M2 Name > Part Code
+                    const partName = dataStock.name || dataM0.name || dataM1.name || dataM2.name || '-';
+
+                    // ABC Category Priority: Stock ABC > Sales ABC > 'N'
+                    let abcCategory = dataStock.abc || dataM0.abc || dataM1.abc || dataM2.abc || 'N';
+                    if (!['A','B','C','D','S','N'].includes(abcCategory)) {
+                        abcCategory = 'N';
+                    }
+
+                    // ROQ Priority: Custom ROQ per part -> Default ROQ
+                    const roq = (APP_STATE.roqConfig.customROQ && APP_STATE.roqConfig.customROQ[partCode]) 
+                        ? APP_STATE.roqConfig.customROQ[partCode] 
+                        : (APP_STATE.roqConfig.defaultROQ || 10);
+
+                    // Recommendation Calculation Formulas
+                    const targetStock = avgDemand;
+                    const kekurangan = targetStock - stockQty;
+
+                    let recOrder = 0;
+                    let status = 'STOK AMAN';
+
+                    if (kekurangan <= 0 || stockQty >= avgDemand) {
+                        recOrder = 0;
+                        status = 'STOK AMAN';
+                    } else {
+                        // Kekurangan > 0
+                        recOrder = Math.ceil(kekurangan / roq) * roq;
+                        if (stockQty === 0) {
+                            status = 'STOK 0';
+                        } else {
+                            status = 'REKOMENDASI ORDER';
+                        }
+                    }
+
+                    results.push({
+                        partCode: partCode,
+                        partName: partName,
+                        m0Qty: m0Qty,
+                        m1Qty: m1Qty,
+                        m2Qty: m2Qty,
+                        totalSales3M: totalSales3M,
+                        avgDemand: avgDemand,
+                        stockQty: stockQty,
+                        abcCategory: abcCategory,
+                        roq: roq,
+                        kekurangan: kekurangan,
+                        recOrder: recOrder,
+                        status: status
+                    });
+                });
+
+                APP_STATE.processedData = results;
+                APP_STATE.lastProcessTime = new Date().toLocaleString('id-ID');
+
+                // Update UI Components
+                renderDashboard();
+                applyFiltersAndSort();
+
+                document.getElementById('dashboardSection').classList.remove('hidden');
+                document.getElementById('tableSection').classList.remove('hidden');
+
+                showToast(`Sukses memproses ${results.length} kode spare part!`, 'success');
+
+            } catch (err) {
+                console.error("Failed processing data:", err);
+                showToast(`Gagal Memproses: ${err.message}`, 'error');
+            }
+        }
+
+        // RENDER DASHBOARD STATS
+        function renderDashboard() {
+            const data = APP_STATE.processedData;
+            const uniqueParts = data.length;
+            const totalSales = data.reduce((sum, item) => sum + item.totalSales3M, 0);
+            const totalStock = data.reduce((sum, item) => sum + item.stockQty, 0);
+            const partsToOrder = data.filter(item => item.recOrder > 0).length;
+            const totalQtyRec = data.reduce((sum, item) => sum + item.recOrder, 0);
+
+            document.getElementById('lastProcessTime').innerText = APP_STATE.lastProcessTime || '-';
+            document.getElementById('totalPartCount').innerText = uniqueParts.toLocaleString('id-ID');
+
+            document.getElementById('statUniqueParts').innerText = uniqueParts.toLocaleString('id-ID');
+            document.getElementById('statTotalSales3M').innerText = totalSales.toLocaleString('id-ID');
+            document.getElementById('statTotalStock').innerText = totalStock.toLocaleString('id-ID');
+            document.getElementById('statPartsToOrder').innerText = partsToOrder.toLocaleString('id-ID');
+            document.getElementById('statTotalQtyRec').innerText = totalQtyRec.toLocaleString('id-ID');
+
+            // ABC Breakdown calculation
+            const abcCounts = { A: 0, B: 0, C: 0, D: 0, S: 0, N: 0 };
+            data.forEach(item => {
+                if (abcCounts.hasOwnProperty(item.abcCategory)) {
+                    abcCounts[item.abcCategory]++;
+                } else {
+                    abcCounts['N']++;
+                }
+            });
+
+            const container = document.getElementById('abcBreakdownContainer');
+            container.innerHTML = Object.keys(abcCounts).map(cat => {
+                const count = abcCounts[cat];
+                const pct = uniqueParts > 0 ? Math.round((count / uniqueParts) * 100) : 0;
+                return `
+                    <div class="bg-slate-50 border border-slate-200 p-2 rounded-lg">
+                        <span class="font-extrabold text-slate-800 text-sm">Kat. ${cat}</span>
+                        <div class="text-base font-black text-yamaha-blue my-0.5">${count}</div>
+                        <span class="text-[10px] text-slate-400 font-medium">${pct}% part</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // SEARCH & FILTER HANDLERS
+        function handleSearchFilterChange() {
+            APP_STATE.currentPage = 1;
+            applyFiltersAndSort();
+        }
+
+        function setPresetFilter(preset) {
+            APP_STATE.activePreset = preset;
+            APP_STATE.currentPage = 1;
+
+            // Highlight preset buttons
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.className = "preset-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100";
+            });
+            const activeBtn = document.getElementById(`preset${preset}`);
+            if (activeBtn) {
+                activeBtn.className = "preset-btn px-3 py-1.5 text-xs font-bold rounded-lg bg-yamaha-blue text-white shadow";
+            }
+
+            applyFiltersAndSort();
+        }
+
+        function sortByField(field) {
+            if (APP_STATE.sortField === field) {
+                APP_STATE.sortDirection = APP_STATE.sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                APP_STATE.sortField = field;
+                APP_STATE.sortDirection = 'desc';
+            }
+            applyFiltersAndSort();
+        }
+
+        function applyFiltersAndSort() {
+            let list = [...APP_STATE.processedData];
+
+            // Search query
+            const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+            if (searchVal) {
+                list = list.filter(item => 
+                    item.partCode.toLowerCase().includes(searchVal) || 
+                    item.partName.toLowerCase().includes(searchVal)
+                );
+            }
+
+            // ABC Filter
+            const abcVal = document.getElementById('filterABC').value;
+            if (abcVal !== 'ALL') {
+                list = list.filter(item => item.abcCategory === abcVal);
+            }
+
+            // Preset Filter
+            if (APP_STATE.activePreset === 'ORDER') {
+                list = list.filter(item => item.recOrder > 0);
+            } else if (APP_STATE.activePreset === 'STOCK0') {
+                list = list.filter(item => item.stockQty === 0);
+            } else if (APP_STATE.activePreset === 'SAFE') {
+                list = list.filter(item => item.recOrder === 0);
+            }
+
+            // Sort Logic: Default priority order -> Rekomendasi > 0 on top, then Average Demand desc
+            list.sort((a, b) => {
+                // If custom field click, respect that field
+                if (APP_STATE.sortField) {
+                    let valA = a[APP_STATE.sortField];
+                    let valB = b[APP_STATE.sortField];
+                    if (typeof valA === 'string') valA = valA.toLowerCase();
+                    if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                    if (valA < valB) return APP_STATE.sortDirection === 'asc' ? -1 : 1;
+                    if (valA > valB) return APP_STATE.sortDirection === 'asc' ? 1 : -1;
+                    return 0;
+                }
+
+                // Default Sort Rules
+                if (a.recOrder > 0 && b.recOrder === 0) return -1;
+                if (a.recOrder === 0 && b.recOrder > 0) return 1;
+                if (b.avgDemand !== a.avgDemand) return b.avgDemand - a.avgDemand;
+                return a.partCode.localeCompare(b.partCode);
+            });
+
+            APP_STATE.filteredData = list;
+            renderTable();
+        }
+
+        // RENDER RECOMMENDATION TABLE
+        function renderTable() {
+            const tbody = document.getElementById('recommendationTableBody');
+            tbody.innerHTML = '';
+
+            const list = APP_STATE.filteredData;
+            const total = list.length;
+
+            if (total === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="13" class="text-center py-8 text-slate-400">
+                            <i class="fa-solid fa-box-open text-3xl mb-2 block"></i>
+                            Tidak ada data spare part yang cocok dengan filter pencarian.
+                        </td>
+                    </tr>
+                `;
+                renderPagination(0, 0, 0);
+                return;
+            }
+
+            // Pagination slice
+            const perPage = APP_STATE.itemsPerPage;
+            const startIdx = (APP_STATE.currentPage - 1) * perPage;
+            const endIdx = Math.min(startIdx + perPage, total);
+            const pageData = list.slice(startIdx, endIdx);
+
+            pageData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b border-slate-100 transition cursor-pointer";
+                tr.onclick = () => openAuditModal(item.partCode);
+
+                // Row Highlights based on status
+                let rowBgClass = "";
+                if (item.recOrder > 0 && item.stockQty === 0) {
+                    rowBgClass = "bg-red-50/40 hover:bg-red-50";
+                } else if (item.recOrder > 0) {
+                    rowBgClass = "bg-amber-50/40 hover:bg-amber-50";
+                }
+                if (rowBgClass) tr.className += " " + rowBgClass;
+
+                // Status Badge
+                let statusBadge = "";
+                if (item.status === 'STOK 0') {
+                    statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-100 text-red-700 border border-red-300 inline-block"><i class="fa-solid fa-triangle-exclamation mr-1"></i>STOK 0</span>`;
+                } else if (item.status === 'REKOMENDASI ORDER') {
+                    statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800 border border-amber-300 inline-block"><i class="fa-solid fa-cart-shopping mr-1"></i>ORDER</span>`;
+                } else {
+                    statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-700 border border-emerald-300 inline-block"><i class="fa-solid fa-check mr-1"></i>AMAN</span>`;
+                }
+
+                // ABC Category Badge
+                let abcBadgeClass = "bg-slate-100 text-slate-700";
+                if (item.abcCategory === 'A') abcBadgeClass = "bg-blue-100 text-blue-800 font-bold border border-blue-200";
+                else if (item.abcCategory === 'B') abcBadgeClass = "bg-teal-100 text-teal-800 font-bold border border-teal-200";
+
+                tr.innerHTML = `
+                    <td class="py-2.5 px-3 font-mono font-bold text-slate-900">${item.partCode}</td>
+                    <td class="py-2.5 px-3 font-medium text-slate-700 max-w-xs truncate" title="${item.partName}">${item.partName}</td>
+                    <td class="py-2.5 px-2 text-center">
+                        <span class="px-1.5 py-0.5 rounded text-[10px] ${abcBadgeClass}">${item.abcCategory}</span>
+                    </td>
+
+                    <!-- Optional Detail Columns -->
+                    <td class="detail-col hidden py-2.5 px-2 text-right font-mono">${item.m0Qty.toLocaleString('id-ID')}</td>
+                    <td class="detail-col hidden py-2.5 px-2 text-right font-mono">${item.m1Qty.toLocaleString('id-ID')}</td>
+                    <td class="detail-col hidden py-2.5 px-2 text-right font-mono">${item.m2Qty.toLocaleString('id-ID')}</td>
+                    <td class="detail-col hidden py-2.5 px-2 text-right font-mono font-bold">${item.totalSales3M.toLocaleString('id-ID')}</td>
+
+                    <td class="py-2.5 px-2 text-right font-mono font-bold text-blue-700">${item.avgDemand.toFixed(2)}</td>
+                    <td class="py-2.5 px-2 text-right font-mono font-bold ${item.stockQty === 0 ? 'text-red-600' : 'text-slate-800'}">${item.stockQty.toLocaleString('id-ID')}</td>
+                    <td class="py-2.5 px-2 text-center font-mono text-slate-600">${item.roq}</td>
+
+                    <!-- Kekurangan Column -->
+                    <td class="detail-col hidden py-2.5 px-2 text-right font-mono font-bold ${item.kekurangan > 0 ? 'text-amber-600' : 'text-slate-400'}">
+                        ${item.kekurangan.toFixed(2)}
+                    </td>
+
+                    <td class="py-2.5 px-3 text-right font-mono font-black text-sm ${item.recOrder > 0 ? 'text-emerald-700 bg-emerald-100/60 rounded' : 'text-slate-400'}">
+                        ${item.recOrder.toLocaleString('id-ID')}
+                    </td>
+                    <td class="py-2.5 px-3 text-center">${statusBadge}</td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+            // Maintain detail visibility toggle state
+            updateDetailColumnsVisibility();
+            renderPagination(startIdx + 1, endIdx, total);
+        }
+
+        function renderPagination(start, end, total) {
+            const info = document.getElementById('paginationInfo');
+            info.innerText = `Menampilkan ${start} - ${end} dari ${total.toLocaleString('id-ID')} data`;
+
+            const controls = document.getElementById('paginationControls');
+            controls.innerHTML = '';
+
+            const totalPages = Math.ceil(total / APP_STATE.itemsPerPage);
+            if (totalPages <= 1) return;
+
+            // Previous Button
+            const prevBtn = document.createElement('button');
+            prevBtn.className = "px-2.5 py-1 rounded border border-slate-300 text-xs bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed";
+            prevBtn.disabled = APP_STATE.currentPage === 1;
+            prevBtn.onclick = () => { APP_STATE.currentPage--; renderTable(); };
+            prevBtn.innerHTML = `<i class="fa-solid fa-chevron-left"></i>`;
+            controls.appendChild(prevBtn);
+
+            // Page Indicator
+            const pageNum = document.createElement('span');
+            pageNum.className = "px-3 py-1 text-xs font-bold text-slate-700";
+            pageNum.innerText = `${APP_STATE.currentPage} / ${totalPages}`;
+            controls.appendChild(pageNum);
+
+            // Next Button
+            const nextBtn = document.createElement('button');
+            nextBtn.className = "px-2.5 py-1 rounded border border-slate-300 text-xs bg-white hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed";
+            nextBtn.disabled = APP_STATE.currentPage === totalPages;
+            nextBtn.onclick = () => { APP_STATE.currentPage++; renderTable(); };
+            nextBtn.innerHTML = `<i class="fa-solid fa-chevron-right"></i>`;
+            controls.appendChild(nextBtn);
+        }
+
+        function changeItemsPerPage(val) {
+            APP_STATE.itemsPerPage = parseInt(val, 10);
+            APP_STATE.currentPage = 1;
+            renderTable();
+        }
+
+        function toggleDetailColumns() {
+            APP_STATE.showDetails = !APP_STATE.showDetails;
+            const btnTxt = document.getElementById('txtToggleDetails');
+            btnTxt.innerText = APP_STATE.showDetails ? "Sembunyikan Detail" : "Tampil Detail";
+            updateDetailColumnsVisibility();
+        }
+
+        function updateDetailColumnsVisibility() {
+            const detailCols = document.querySelectorAll('.detail-col');
+            detailCols.forEach(col => {
+                if (APP_STATE.showDetails) col.classList.remove('hidden');
+                else col.classList.add('hidden');
+            });
+        }
+
+        // EXPORT TO EXCEL (.XLSX)
+        function exportToExcel() {
+            if (APP_STATE.processedData.length === 0) {
+                showToast('Tidak ada data untuk di-export!', 'warning');
+                return;
+            }
+
+            const exportRows = APP_STATE.filteredData.map(item => ({
+                'Kode Part': item.partCode,
+                'Nama Part': item.partName,
+                'Jual Bulan Ini (M0)': item.m0Qty,
+                'Jual Bulan Kemarin (M1)': item.m1Qty,
+                'Jual Bulan Kemarin Lusa (M2)': item.m2Qty,
+                'Jumlah Jual 3 Bulan': item.totalSales3M,
+                'Average Demand': parseFloat(item.avgDemand.toFixed(2)),
+                'Stok Saat Ini': item.stockQty,
+                'ABC Category': item.abcCategory,
+                'ROQ': item.roq,
+                'Kekurangan': parseFloat(item.kekurangan.toFixed(2)),
+                'Rekomendasi Beli': item.recOrder,
+                'Status': item.status
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(exportRows);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Rekomendasi_Order");
+
+            const dateStr = new Date().toISOString().split('T')[0];
+            const fileName = `Rekomendasi_Order_Sparepart_${dateStr}.xlsx`;
+
+            XLSX.writeFile(workbook, fileName);
+            showToast(`File ${fileName} berhasil terunduh!`, 'success');
+        }
+
+        // EXPORT TO CSV
+        function exportToCSV() {
+            if (APP_STATE.processedData.length === 0) {
+                showToast('Tidak ada data untuk di-export!', 'warning');
+                return;
+            }
+
+            const headers = ['Kode Part','Nama Part','Jual Bulan Ini','Jual Bulan Kemarin','Jual Bulan Kemarin Lusa','Jumlah Jual 3 Bulan','Average Demand','Stok Saat Ini','ABC Category','ROQ','Kekurangan','Rekomendasi Beli','Status'];
+            let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n";
+
+            APP_STATE.filteredData.forEach(item => {
+                const row = [
+                    `"${item.partCode}"`,
+                    `"${item.partName.replace(/"/g, '""')}"`,
+                    item.m0Qty,
+                    item.m1Qty,
+                    item.m2Qty,
+                    item.totalSales3M,
+                    item.avgDemand.toFixed(2),
+                    item.stockQty,
+                    `"${item.abcCategory}"`,
+                    item.roq,
+                    item.kekurangan.toFixed(2),
+                    item.recOrder,
+                    `"${item.status}"`
+                ];
+                csvContent += row.join(",") + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            const dateStr = new Date().toISOString().split('T')[0];
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Rekomendasi_Order_Sparepart_${dateStr}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('File CSV berhasil di-export!', 'success');
+        }
+
+        // AUDIT DETAIL MODAL
+        function openAuditModal(partCode) {
+            const item = APP_STATE.processedData.find(i => i.partCode === partCode);
+            if (!item) return;
+
+            const modal = document.getElementById('auditModal');
+            const content = document.getElementById('auditModalContent');
+
+            const isCustomROQ = APP_STATE.roqConfig.customROQ && APP_STATE.roqConfig.customROQ[item.partCode];
+
+            content.innerHTML = `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-2 gap-2 text-xs">
+                    <div><span class="text-slate-400 block">Kode Part:</span> <strong class="text-sm font-mono text-slate-900">${item.partCode}</strong></div>
+                    <div><span class="text-slate-400 block">Nama Part:</span> <strong class="text-sm text-slate-800">${item.partName}</strong></div>
+                    <div><span class="text-slate-400 block">Kategori ABC:</span> <strong class="text-slate-800 font-bold">${item.abcCategory}</strong></div>
+                    <div><span class="text-slate-400 block">Status Order:</span> <strong class="text-slate-800 font-bold">${item.status}</strong></div>
+                </div>
+
+                <div class="space-y-3 pt-2">
+                    <h4 class="font-bold text-slate-800 border-b border-slate-200 pb-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-square-root-variable text-blue-600"></i> Formulasi Perhitungan Matematika
+                    </h4>
+
+                    <!-- Step 1 -->
+                    <div class="bg-blue-50/50 p-3 rounded-lg border border-blue-100">
+                        <div class="font-bold text-blue-900">Langkah 1: Average Demand (1 Periode Target)</div>
+                        <p class="text-slate-600 text-[11px] mt-1">Rumus: <code>Total Penjualan 3 Bulan / 3</code></p>
+                        <div class="mt-2 font-mono bg-white p-2 rounded border border-blue-200 text-blue-800 font-semibold">
+                            Average = (${item.m0Qty} + ${item.m1Qty} + ${item.m2Qty}) / 3 = ${(item.totalSales3M/3).toFixed(4)}... 
+                            <br>&rarr; Display: <strong class="text-blue-900">${item.avgDemand.toFixed(2)}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-amber-50/50 p-3 rounded-lg border border-amber-100">
+                        <div class="font-bold text-amber-900">Langkah 2: Perhitungan Kekurangan (Deficit)</div>
+                        <p class="text-slate-600 text-[11px] mt-1">Rumus: <code>Target Stock (Average Demand) - Stok Saat Ini</code></p>
+                        <div class="mt-2 font-mono bg-white p-2 rounded border border-amber-200 text-amber-900 font-semibold">
+                            Kekurangan = ${item.avgDemand.toFixed(2)} - ${item.stockQty} = <strong class="text-amber-700">${item.kekurangan.toFixed(2)}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-emerald-50/50 p-3 rounded-lg border border-emerald-100">
+                        <div class="font-bold text-emerald-900">Langkah 3: Rekomendasi Purchase Order (ROQ Adjustment)</div>
+                        <p class="text-slate-600 text-[11px] mt-1">
+                            ROQ Digunakan: <strong>${item.roq}</strong> ${isCustomROQ ? '<span class="text-amber-600 font-bold">(Khusus Admin)</span>' : '(Default System)'}
+                        </p>
+                        ${item.kekurangan <= 0 ? `
+                            <div class="mt-2 text-emerald-800 bg-white p-2 rounded border border-emerald-200 font-semibold">
+                                Stok Saat Ini (${item.stockQty}) &ge; Target Average Demand (${item.avgDemand.toFixed(2)}).
+                                <br><strong>Rekomendasi Order = 0 (STOK AMAN)</strong>
+                            </div>
+                        ` : `
+                            <div class="mt-2 font-mono bg-white p-2 rounded border border-emerald-200 text-emerald-900 font-semibold">
+                                Formula: CEILING(Kekurangan / ROQ) &times; ROQ
+                                <br>Calculation: CEILING(${item.kekurangan.toFixed(2)} / ${item.roq}) &times; ${item.roq} 
+                                <br>= ${Math.ceil(item.kekurangan / item.roq)} &times; ${item.roq} = <strong class="text-emerald-700 text-sm">${item.recOrder}</strong>
+                            </div>
+                        `}
+                    </div>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeAuditModal() {
+            document.getElementById('auditModal').classList.add('hidden');
+        }
+
+        // ADMIN MANAGEMENT MODAL HANDLERS
+        function openAdminModal() {
+            if (!APP_STATE.currentUser || APP_STATE.currentUser.role !== 'admin') {
+                showToast('Akses khusus Admin!', 'error');
+                return;
+            }
+
+            document.getElementById('inputDefaultROQ').value = APP_STATE.roqConfig.defaultROQ || 10;
+            renderCustomROQTable();
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        function saveDefaultROQ() {
+            const val = parseInt(document.getElementById('inputDefaultROQ').value, 10);
+            if (isNaN(val) || val <= 0) {
+                showToast('Nilai ROQ Default harus berupa angka positif > 0!', 'error');
+                return;
+            }
+
+            APP_STATE.roqConfig.defaultROQ = val;
+            saveROQSettingsToStorage();
+            showToast(`ROQ Default berhasil diubah menjadi ${val}`, 'success');
+
+            // Re-calculate if data exists
+            if (APP_STATE.processedData.length > 0) {
+                processAllFiles();
+            }
+        }
+
+        function addCustomROQ() {
+            const codeInput = document.getElementById('adminNewPartCode');
+            const roqInput = document.getElementById('adminNewROQ');
+
+            const code = normalizePartCode(codeInput.value);
+            const val = parseInt(roqInput.value, 10);
+
+            if (!code) {
+                showToast('Masukkan Kode Part yang valid!', 'warning');
+                return;
+            }
+            if (isNaN(val) || val <= 0) {
+                showToast('Nilai ROQ harus angka positif > 0!', 'warning');
+                return;
+            }
+
+            if (!APP_STATE.roqConfig.customROQ) APP_STATE.roqConfig.customROQ = {};
+            APP_STATE.roqConfig.customROQ[code] = val;
+
+            saveROQSettingsToStorage();
+            renderCustomROQTable();
+
+            codeInput.value = '';
+            roqInput.value = '';
+
+            showToast(`ROQ Khusus part ${code} di-set ke ${val}`, 'success');
+
+            if (APP_STATE.processedData.length > 0) {
+                processAllFiles();
+            }
+        }
+
+        function removeCustomROQ(code) {
+            if (APP_STATE.roqConfig.customROQ && APP_STATE.roqConfig.customROQ[code]) {
+                delete APP_STATE.roqConfig.customROQ[code];
+                saveROQSettingsToStorage();
+                renderCustomROQTable();
+                showToast(`ROQ Khusus untuk ${code} telah dihapus.`, 'info');
+
+                if (APP_STATE.processedData.length > 0) {
+                    processAllFiles();
+                }
+            }
+        }
+
+        function renderCustomROQTable() {
+            const tbody = document.getElementById('customROQTableBody');
+            tbody.innerHTML = '';
+
+            const customMap = APP_STATE.roqConfig.customROQ || {};
+            const keys = Object.keys(customMap);
+
+            if (keys.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="p-3 text-center text-slate-400 italic">
+                            Belum ada pengaturan ROQ khusus per kode part.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            keys.forEach(code => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2 font-mono font-bold text-slate-800">${code}</td>
+                    <td class="p-2 font-bold text-amber-700">${customMap[code]}</td>
+                    <td class="p-2 text-center">
+                        <button onclick="removeCustomROQ('${code}')" class="px-2 py-0.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-[10px] font-bold">
+                            Hapus
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function exportROQConfig() {
+            const jsonStr = JSON.stringify(APP_STATE.roqConfig, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Yamaha_ROQ_Config_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showToast('Konfigurasi ROQ berhasil diexport!', 'success');
+        }
+
+        function importROQConfig(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed && typeof parsed.defaultROQ === 'number') {
+                        APP_STATE.roqConfig = parsed;
+                        saveROQSettingsToStorage();
+                        document.getElementById('inputDefaultROQ').value = parsed.defaultROQ;
+                        renderCustomROQTable();
+                        showToast('Konfigurasi ROQ berhasil di-import!', 'success');
+
+                        if (APP_STATE.processedData.length > 0) {
+                            processAllFiles();
+                        }
+                    } else {
+                        throw new Error("Format JSON ROQ tidak valid!");
+                    }
+                } catch (err) {
+                    showToast(`Gagal Import: ${err.message}`, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // RESET DATA
+        function resetAllData() {
+            if (confirm('Apakah Anda yakin ingin mereset seluruh data file dan hasil pengolahan?')) {
+                APP_STATE.files = { m0: null, m1: null, m2: null, stock: null };
+                APP_STATE.processedData = [];
+                APP_STATE.filteredData = [];
+
+                ['M0', 'M1', 'M2', 'Stock'].forEach(type => {
+                    document.getElementById(`file${type}`).value = '';
+                    const statusDiv = document.getElementById(`status${type}`);
+                    statusDiv.innerHTML = 'Belum diunggah';
+                    statusDiv.className = "text-[11px] font-semibold text-slate-500 bg-white px-2 py-1 rounded border border-slate-200 w-full truncate";
+                });
+
+                checkProcessButtonState();
+
+                document.getElementById('dashboardSection').classList.add('hidden');
+                document.getElementById('tableSection').classList.add('hidden');
+
+                showToast('Semua data berhasil di-reset.', 'info');
+            }
+        }
+
+        // TOAST NOTIFICATIONS
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            let bgClass = "bg-slate-800 text-white";
+            let iconClass = "fa-info-circle text-blue-400";
+
+            if (type === 'success') {
+                bgClass = "bg-emerald-800 text-white";
+                iconClass = "fa-circle-check text-emerald-300";
+            } else if (type === 'error') {
+                bgClass = "bg-red-800 text-white";
+                iconClass = "fa-triangle-exclamation text-red-300";
+            } else if (type === 'warning') {
+                bgClass = "bg-amber-800 text-white";
+                iconClass = "fa-triangle-exclamation text-amber-300";
+            }
+
+            toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl border border-white/10 text-xs font-semibold ${bgClass} transform transition duration-300 pointer-events-auto`;
+            toast.innerHTML = `<i class="fa-solid ${iconClass} text-base"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    if (toast.parentNode) toast.parentNode.removeChild(toast);
+                }, 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
